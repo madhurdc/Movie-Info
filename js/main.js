@@ -6,7 +6,7 @@ $(document).ready(() => {
     });
 });
 function getMovies(searchText){
-    axios.get(`https://infomovie.vercel.app/api/movies?title=${encodeURIComponent(searchText)}&type=search`)
+    axios.get(`/api/movies?title=${encodeURIComponent(searchText)}&type=search`)
     .then((response) => {
         console.log(response)
         let movies = response.data.Search;
@@ -38,7 +38,7 @@ function movieSelected(id){
 function getMovie()
 {
     let movieId = sessionStorage.getItem('movieId'); 
-    axios.get(`https://infomovie.vercel.app/api/movies?title=${movieId}`)
+    axios.get(`/api/movies?title=${encodeURIComponent(movieId)}`)
     .then((response) => {
         console.log(response);
         let movie = response.data;
