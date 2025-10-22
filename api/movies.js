@@ -1,31 +1,28 @@
-require('dotenv').config();
-const express = require('express');
-const axios = require('axios');
-const cors = require('cors'); // allow cross-origin requests if frontend is separate
-const app = express();
+import axios from "axios";
 
-app.use(cors());
-
-app.get('/api/movies', async (req, res) => {
-  const { title, type } = req.query; // get title and type from query
+export default async function handler(req, res) {
+  const { title, type } = req.query;
 
   if (!title) {
-    return res.status(400).json({ error: "Title query parameter is required" });
+    res.status(400).json({ error: "Title query parameter is required" });
+    return;
+  }
+
+  // Make sure API key exists
+  const apiKey = process.env.OMDB_API_KEY;
+  if (!apiKey) {
+    res.status(500).json({ error: "API key not set" });
+    return;
   }
 
   try {
-    // decide which parameter to use: t= or s=
-    const param = type === 'search' ? 's' : 't';
+    const param = type === "search" ? "s" : "t";
     const response = await axios.get(
-      `https://www.omdbapi.com/?${param}=${encodeURIComponent(title)}&apikey=${process.env.OMDB_API_KEY}`
+      `https://www.omdbapi.com/?${param}=${encodeURIComponent(title)}&apikey=${apiKey}`
     );
-
-    res.json(response.data);
+    res.status(200).json(response.data);
   } catch (err) {
-    res.status(500).json({ error: 'Something went wrong' });
+    console.error(err); // logs will appear in Vercel dashboard
+    res.status(500).json({ error: "Something went wrong" });
   }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
+}
