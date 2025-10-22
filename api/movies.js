@@ -8,7 +8,6 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Make sure API key exists
   const apiKey = process.env.OMDB_API_KEY;
   if (!apiKey) {
     res.status(500).json({ error: "API key not set" });
@@ -16,13 +15,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    const param = type === "search" ? "s" : "t";
-    const response = await axios.get(
-      `https://www.omdbapi.com/?${param}=${encodeURIComponent(title)}&apikey=${apiKey}`
-    );
+    let url;
+    if (type === "search") {
+      // multiple results
+      url = `https://www.omdbapi.com/?s=${encodeURIComponent(title)}&apikey=${apiKey}`;
+    } else if (type === "id") {
+      // single movie by IMDb ID
+      url = `https://www.omdbapi.com/?i=${encodeURIComponent(title)}&apikey=${apiKey}`;
+    } else {
+      // single movie by title
+      url = `https://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${apiKey}`;
+    }
+
+    const response = await axios.get(url);
     res.status(200).json(response.data);
   } catch (err) {
-    console.error(err); // logs will appear in Vercel dashboard
+    console.error(err.response?.data || err.message);
     res.status(500).json({ error: "Something went wrong" });
   }
 }
